@@ -63,8 +63,14 @@ DURATION_OPTIONS = {
 # =========================================
 class Database:
     def __init__(self):
-        db_path = os.getenv("DATABASE_URL", "fusion_premium.db")
-        self.conn = sqlite3.connect(db_path, check_same_thread=False)
+        db_path = os.getenv("DATABASE_URL")
+        if not db_path:
+            db_path = "/tmp/fusion_premium.db"
+        try:
+            self.conn = sqlite3.connect(db_path, check_same_thread=False)
+        except Exception as e:
+            logger.error(f"Unable to connect to database at {db_path}: {e}")
+            self.conn = sqlite3.connect(":memory:", check_same_thread=False)
         self.create_tables()
         self.temp_attack_data = {}
         self.temp_admin_data = {}
