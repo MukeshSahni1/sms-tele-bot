@@ -423,10 +423,6 @@ async def btn_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # =========================================
 # 🌐 VERCEL HANDLER
 # =========================================
-from http.server import BaseHTTPRequestHandler
-from urllib.parse import parse_qs
-import sys
-
 app = Application.builder().token(BOT_TOKEN).build()
 
 # Add handlers
@@ -434,42 +430,52 @@ app.add_handler(CommandHandler("start", start))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_msg))
 app.add_handler(CallbackQueryHandler(btn_handler))
 
-class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        if self.path == "/api/webhook":
-            self.send_response(200)
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-            self.wfile.write(json.dumps({"status": "ok"}).encode())
-        else:
-            self.send_response(404)
-            self.end_headers()
+async def process_update_body(body):
+    if isinstance(body, bytes):
+        body = body.decode('utf-8')
+    if isinstance(body, str):
+        update_data = json.loads(body)
+    else:
+        update_data = body
+    update = Update.de_json(update_data, app.bot)
+    await app.process_update(update)
 
-    def do_POST(self):
-        if self.path == "/api/webhook":
-            content_length = int(self.headers.get("Content-Length", 0))
-            body = self.rfile.read(content_length)
-            
-            try:
+
+def handler(request):
+    method = getattr(request, 'method', 'GET')
+    if method == 'GET':
+        return {
+            'statusCode': 200,
+            'headers': {'Content-Type': 'application/json'},
+            'body': json.dumps({'status': 'ok'})
+        }
+
+    if method == 'POST':
+        try:
+            if hasattr(request, 'json'):
+                update_data = request.json()
+            else:
+                body = request.body
+                if isinstance(body, bytes):
+                    body = body.decode('utf-8')
                 update_data = json.loads(body)
-                update = Update.de_json(update_data, app.bot)
-                
-                # Process update
-                asyncio.run(app.process_update(update))
-                
-                self.send_response(200)
-                self.send_header("Content-type", "application/json")
-                self.end_headers()
-                self.wfile.write(json.dumps({"ok": True}).encode())
-            except Exception as e:
-                logger.error(f"Error processing update: {e}")
-                self.send_response(500)
-                self.end_headers()
-        else:
-            self.send_response(404)
-            self.end_headers()
 
-# Set webhook on startup (for local testing)
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+            asyncio.run(process_update_body(update_data))
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json'},
+                'body': json.dumps({'ok': True})
+            }
+        except Exception as e:
+            logger.error(f"Error processing update: {e}")
+            return {
+                'statusCode': 500,
+                'headers': {'Content-Type': 'application/json'},
+                'body': json.dumps({'ok': False, 'error': str(e)})
+            }
+
+    return {
+        'statusCode': 405,
+        'headers': {'Content-Type': 'application/json'},
+        'body': json.dumps({'error': 'Method Not Allowed'})
+    }
