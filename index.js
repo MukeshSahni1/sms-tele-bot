@@ -542,7 +542,20 @@ bot.on('text', async (ctx) => {
   }
 
   if (!text.startsWith('/')) {
-    await ctx.reply('🤔 *Not sure what you want?*\n\nUse the menu buttons or type /start to see all options.', {
+    // Provide helpful guidance based on context
+    let helpMessage = '🤔 *Not sure what you want?*\n\n';
+    
+    if (session.waitingForNumber) {
+      helpMessage += '📞 You need to enter a *10-digit phone number*\n\nExample: `9876543210`';
+    } else if (session.waitingForProtect) {
+      helpMessage += '🛡 Please enter a *10-digit phone number to protect*\n\nExample: `9876543210`';
+    } else if (session.waitingForBroadcast) {
+      helpMessage += '📢 Enter your *broadcast message* to send to all users';
+    } else {
+      helpMessage += '*Use the menu buttons below:*\n• 📱 SMS - Send SMS attacks\n• 📞 Call - Send voice calls\n• 💬 WhatsApp - Send WhatsApp messages\n• 📊 Status - Check attack status\n• 👤 Account - View account info\n• 🛡 Protect - Protect your number\n• 🔓 Unprotect - Remove protection\n• ❓ Help - Get support';
+    }
+    
+    await ctx.reply(helpMessage, {
       parse_mode: 'Markdown',
       reply_markup: mainKeyboard(userId)
     });
