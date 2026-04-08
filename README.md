@@ -14,79 +14,30 @@ A completely FREE Telegram bot for SMS, Call, and WhatsApp attacks with 234+ API
 
 ---
 
-## 📦 Deployment on Vercel
-
-### Prerequisites
-- GitHub account with your code pushed
-- Vercel account (connected to GitHub)
-- Bot Token from Telegram BotFather
-
-### Step 1: Update Webhook URL
-Edit `api/webhook.py` and set your Vercel domain:
-
-```python
-WEBHOOK_URL = "https://your-project.vercel.app/api/webhook"
-```
-
-### Step 2: Push to GitHub
-```bash
-git add .
-git commit -m "Vercel deployment ready"
-git push origin main
-```
-
-### Step 3: Deploy on Vercel
-1. Go to **vercel.com**
-2. Click "New Project"
-3. Select your GitHub repository
-4. Click "Deploy"
-5. After deployment, get your domain (e.g., `https://my-bot.vercel.app`)
-
-### Step 4: Set Telegram Webhook
-After Vercel deployment, set the webhook by visiting this URL in browser:
-
-```
-https://api.telegram.org/bot{YOUR_BOT_TOKEN}/setWebhook?url=https://your-project.vercel.app/api/webhook
-```
-
-Replace:
-- `{YOUR_BOT_TOKEN}` with your actual bot token
-- `your-project.vercel.app` with your Vercel domain
-
-### Step 5: Test
-Send `/start` to your bot on Telegram - it should respond!
-
----
-
-## 🔧 Local Development
+## 📦 Local Development
 
 ### Install dependencies:
 ```bash
-pip install -r requirements.txt
+npm install
 ```
 
-### Run locally (polling mode):
+### Run locally:
 ```bash
-python3 2v3.py
+npm start
 ```
 
-### For webhook testing locally:
+### Configuration
+Create a `.env` file in the project root with these values:
 ```bash
-python3 api/webhook.py
+BOT_TOKEN="your_bot_token"
+OWNER_ID="6684734209"
 ```
 
----
+You can also copy `.env.example` and update it with your token.
 
-## 📝 Configuration
-
-Edit constants in `api/webhook.py`:
-
-```python
-BOT_TOKEN = "your_token_here"      # Get from BotFather
-OWNER_ID = 6684734209              # Your Telegram user ID
-WEBHOOK_URL = "your_vercel_url"    # Your Vercel webhook URL
-WELCOME_IMAGE = "image_url"        # Custom welcome image
-```
+### Notes
+- The bot uses polling by default.
+- A simple health endpoint is available at `/`.
 
 ---
 
@@ -94,27 +45,22 @@ WELCOME_IMAGE = "image_url"        # Custom welcome image
 
 ```
 .
-├── 2v3.py                 # Local polling bot (for development)
-├── api/
-│   └── webhook.py        # Vercel serverless function
-├── api.json              # 234 attack APIs
-├── vercel.json           # Vercel configuration
-├── requirements.txt      # Python dependencies
-└── fusion_premium.db     # SQLite database
+├── index.js             # Main Node.js bot
+├── package.json         # Node.js package definition
+├── api.json             # Attack API definitions
+├── fusion_premium.db    # SQLite database
+└── README.md            # Project documentation
 ```
 
 ---
 
 ## 🆘 Troubleshooting
 
-**Q: Webhook not working?**  
-A: Make sure you set the webhook using the BotFather URL command above
+**Q: Bot not responding?**
+A: Verify `BOT_TOKEN` is correct and the bot is running.
 
-**Q: Getting 404 errors?**  
-A: Check that `/api/webhook` route exists in vercel.json
-
-**Q: Bot not responding?**  
-A: Verify BOT_TOKEN is correct and webhook is set
+**Q: I changed api.json but the bot still uses old APIs?**
+A: Restart the bot after editing `api.json`.
 
 ---
 
@@ -127,5 +73,3 @@ This bot is for educational purposes only. Unauthorized SMS/Call bombing may be 
 ## 📧 Support
 
 Need help? Create an issue or contact the owner.
-
-**Bot Status:** ✅ Live on Vercel
